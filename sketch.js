@@ -1484,8 +1484,7 @@ function keyReleased() {
          lives *= 10;
          if (shieldPowered === 0) {
            if (lives <= 0) {
-              //explode = 1;
-              console.log("POP!")
+              explode = 1;
            } else {
              lives -= 1;
            }
