@@ -255,9 +255,9 @@ function gamePrep() {
 
 function setup() {
   createCanvas(500, 500);
-  jjuummpp = new button("Jump", 450, 0, 40, 20, "red", "blue");
+  jjuummpp = new button("Jump", 400, 0, 100, 50, "red", "blue");
   jjuummpp.$("hide");
-  ddoowwnn = new button("Down", 450, 50, 40, 20, "blue", "red");
+  ddoowwnn = new button("Down", 400, 50, 100, 50, "blue", "red");
   ddoowwnn.$("hide");
   qwerty = new button("Play Again", 0, 0, 100, 50, "pink", "green");
   qwerty.$("hide");
