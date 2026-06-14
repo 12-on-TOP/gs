@@ -1961,10 +1961,10 @@ class button {
       `width:${w}px;height:${h}px;background-color:${b};color:${c};`
     );
 
-    const touch = isTouchscreen();
+    this.touch = isTouchscreen();
+    this.lock = false; // prevents multiple triggers
 
-    // Desktop hover effects only
-    if (!touch) {
+    if (!this.touch) {
       this.button.mouseOver(() => {
         this.button.style(`background-color:${c};color:${b};`);
       });
@@ -1975,10 +1975,8 @@ class button {
   }
 
   $(a, callback) {
-    const touch = isTouchscreen();
-
-    // Desktop → use p5 DOM events normally
-    if (!touch) {
+    // Desktop → normal p5 events
+    if (!this.touch) {
       if (typeof this.button[a] === "function") {
         return this.button[a](callback);
       }
@@ -1986,24 +1984,25 @@ class button {
       return;
     }
 
-    // Touchscreen → map mousePressed/mouseReleased to touch events
+    // Touchscreen → fire ONCE
     if (a === "mousePressed") {
       this.button.elt.addEventListener("touchstart", (e) => {
-        e.preventDefault(); // prevents ghost click
-        callback();
-      });
-      return;
-    }
-
-    if (a === "mouseReleased") {
-      this.button.elt.addEventListener("touchend", (e) => {
         e.preventDefault();
-        callback();
+
+        if (!this.lock) {
+          this.lock = true;
+          callback();
+        }
       });
+
+      this.button.elt.addEventListener("touchend", () => {
+        this.lock = false; // reset for next press
+      });
+
       return;
     }
 
-    // Fallback for other methods
+    // Fallback
     if (typeof this.button[a] === "function") {
       return this.button[a](callback);
     }
@@ -2011,6 +2010,7 @@ class button {
     console.error(`Method "${a}" does not exist on button.`);
   }
 }
+
 
 class sound {
   constructor(x) {
