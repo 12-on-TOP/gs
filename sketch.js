@@ -1962,7 +1962,7 @@ class button {
     );
 
     this.touch = isTouchscreen();
-    this.lock = false; // prevents multiple triggers
+    this.lock = false; // one-shot latch
 
     if (!this.touch) {
       this.button.mouseOver(() => {
@@ -1984,19 +1984,21 @@ class button {
       return;
     }
 
-    // Touchscreen → fire ONCE
+    // Touchscreen → one-shot touchstart
     if (a === "mousePressed") {
-      this.button.elt.addEventListener("touchstart", (e) => {
-        e.preventDefault();
+      const el = this.button.elt;
+
+      el.addEventListener("touchstart", (e) => {
+        e.preventDefault(); // stops mouse emulation
 
         if (!this.lock) {
           this.lock = true;
           callback();
         }
-      });
+      }, { passive: false });
 
-      this.button.elt.addEventListener("touchend", () => {
-        this.lock = false; // reset for next press
+      el.addEventListener("touchend", () => {
+        this.lock = false; // unlock for next tap
       });
 
       return;
@@ -2010,7 +2012,6 @@ class button {
     console.error(`Method "${a}" does not exist on button.`);
   }
 }
-
 
 class sound {
   constructor(x) {
