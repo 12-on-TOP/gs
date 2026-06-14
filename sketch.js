@@ -333,7 +333,7 @@ function setup() {
   selectMusic.hide();
   allSuperpowers = createDiv().hide();
   aaaaa = createP("null");
-  bbbbb = createInput().value("c-345345345345345;p-life;p-shield;p-shooter;p-✕2;p-✕5;p-shooter1;");
+  bbbbb = createInput().value("0");
   ccccc = new button("null", 0, 0, 60, 30, "gray", "white");
   aaaaa.hide();
   bbbbb.hide();
@@ -368,7 +368,7 @@ function setup() {
   allCollectedSuperpowers = [];
   explode = 0;
   totalCoins = 0;
-  code = "c-345345739048593485793875934857;p-life;p-shield;p-shooter;p-✕2;p-✕5;";
+  code = "0";
   down = 0;
   gamePrep();
   theCode = createP().hide();
@@ -1244,6 +1244,7 @@ character[charrie][0]();
       i.display();
     }
   }
+  console.log(qwerty.button.x,qwerty.button.y);
   if (play === 2) {
     itsover.hide();
     back.$("hide");
@@ -1480,7 +1481,7 @@ function keyReleased() {
        this.x1 -= 5;
        this.x2 -= 5;
        this.x3 -= 5;
-       if (collideCirclePoly(ball.x, ball.y,  s, this.getPoints())) {
+       if (collideCirclePoly(ball.x, ball.y, ball.s, this.getPoints())) {
          lives *= 10;
          if (shieldPowered === 0) {
            if (lives <= 0) {
@@ -1962,7 +1963,7 @@ class button {
     );
 
     this.touch = isTouchscreen();
-    this.lock = false; // one-shot latch
+    this.lock = false; // prevents multiple triggers
 
     if (!this.touch) {
       this.button.mouseOver(() => {
@@ -1974,31 +1975,29 @@ class button {
     }
   }
 
-  $(a, callback) {
+$(a, ...args) {
     // Desktop → normal p5 events
     if (!this.touch) {
       if (typeof this.button[a] === "function") {
-        return this.button[a](callback);
+        return this.button[a](...args);  // Pass all arguments
       }
       console.error(`Method "${a}" does not exist on button.`);
       return;
     }
 
-    // Touchscreen → one-shot touchstart
+    // Touchscreen → fire ONCE
     if (a === "mousePressed") {
-      const el = this.button.elt;
-
-      el.addEventListener("touchstart", (e) => {
-        e.preventDefault(); // stops mouse emulation
+      this.button.elt.addEventListener("touchstart", (e) => {
+        e.preventDefault();
 
         if (!this.lock) {
           this.lock = true;
-          callback();
+          args[0]?.();  // Call the callback if provided
         }
-      }, { passive: false });
+      });
 
-      el.addEventListener("touchend", () => {
-        this.lock = false; // unlock for next tap
+      this.button.elt.addEventListener("touchend", () => {
+        this.lock = false;
       });
 
       return;
@@ -2006,12 +2005,13 @@ class button {
 
     // Fallback
     if (typeof this.button[a] === "function") {
-      return this.button[a](callback);
+      return this.button[a](...args);  // Pass all arguments
     }
 
     console.error(`Method "${a}" does not exist on button.`);
   }
 }
+
 
 class sound {
   constructor(x) {
