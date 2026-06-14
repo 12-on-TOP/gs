@@ -1130,7 +1130,6 @@ character[charrie][0]();
       })
       jjuummpp.$("mouseReleased", () => {
         hhiigghh = 0;
-        ball.sy = 0
         low = 0;
       });
       ddoowwnn.$("mousePressed", () => {
