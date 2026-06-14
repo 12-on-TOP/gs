@@ -1130,6 +1130,7 @@ character[charrie][0]();
       })
       jjuummpp.$("mouseReleased", () => {
         hhiigghh = 0;
+        //ball.sy = 0
         low = 0;
       });
       ddoowwnn.$("mousePressed", () => {
@@ -1479,11 +1480,12 @@ function keyReleased() {
        this.x1 -= 5;
        this.x2 -= 5;
        this.x3 -= 5;
-       if (collideCirclePoly(ball.x, ball.y, 50 * s, this.getPoints())) {
+       if (collideCirclePoly(ball.x, ball.y,  s, this.getPoints())) {
          lives *= 10;
          if (shieldPowered === 0) {
            if (lives <= 0) {
-              explode = 1;
+              //explode = 1;
+              console.log("POP!")
            } else {
              lives -= 1;
            }
@@ -1936,6 +1938,14 @@ function resetGame() {
   gamePrep();
 }
 
+function isTouchscreen() {
+  return (
+    navigator.maxTouchPoints > 0 ||
+    "ontouchstart" in window ||
+    window.matchMedia("(pointer: coarse)").matches
+  );
+}
+
 class button {
   constructor(v, x, y, w, h, b, c) {
     this.v = v;
@@ -1945,23 +1955,60 @@ class button {
     this.h = h;
     this.b = b;
     this.c = c;
+
     this.button = createButton(v).position(this.x, this.y);
     this.button.style(
       `width:${w}px;height:${h}px;background-color:${b};color:${c};`
     );
-    this.button.mouseOver(() => {
-      this.button.style(`background-color:${c};color:${b};`);
-    });
-    this.button.mouseOut(() => {
-      this.button.style(`background-color:${b};color:${c};`);
-    });
-  }
-  $(a, ...x) {
-    if (typeof this.button[a] === "function") {
-      return this.button[a](...x);
-    } else {
-      console.error(`Method "${a}" does not exist on button.`);
+
+    const touch = isTouchscreen();
+
+    // Desktop hover effects only
+    if (!touch) {
+      this.button.mouseOver(() => {
+        this.button.style(`background-color:${c};color:${b};`);
+      });
+      this.button.mouseOut(() => {
+        this.button.style(`background-color:${b};color:${c};`);
+      });
     }
+  }
+
+  $(a, callback) {
+    const touch = isTouchscreen();
+
+    // Desktop → use p5 DOM events normally
+    if (!touch) {
+      if (typeof this.button[a] === "function") {
+        return this.button[a](callback);
+      }
+      console.error(`Method "${a}" does not exist on button.`);
+      return;
+    }
+
+    // Touchscreen → map mousePressed/mouseReleased to touch events
+    if (a === "mousePressed") {
+      this.button.elt.addEventListener("touchstart", (e) => {
+        e.preventDefault(); // prevents ghost click
+        callback();
+      });
+      return;
+    }
+
+    if (a === "mouseReleased") {
+      this.button.elt.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        callback();
+      });
+      return;
+    }
+
+    // Fallback for other methods
+    if (typeof this.button[a] === "function") {
+      return this.button[a](callback);
+    }
+
+    console.error(`Method "${a}" does not exist on button.`);
   }
 }
 
