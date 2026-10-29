@@ -14,7 +14,8 @@
   let hhiigghh,llooww;
   let high,low;
   let justMoved;
-  let upWasDown = false
+  let upWasDown = false;
+  let over = 0;
 
 function preload() {
   sounds = [];
@@ -157,7 +158,6 @@ function gamePrep() {
   s = 1;
   gameOver = null;
   q = 0;
-  6;
   dis = 0;
   jump = 0;
   lives = 0;
@@ -1244,7 +1244,6 @@ character[charrie][0]();
       i.display();
     }
   }
-  console.log(qwerty.button.x,qwerty.button.y);
   if (play === 2) {
     itsover.hide();
     back.$("hide");
@@ -1388,7 +1387,7 @@ SUPERPOWERS.map((i) => {i.hide()});
     scrollplay.html(`
 This game is called the Super Ball Game.<br>
 It is a great game to play anywhere.<br>
-The estimated Geometry Dash rating is 6 stars so it has a rating of Harder.
+This is rip-off geometry dash.
 `);
   } else {
     fourin.hide();
@@ -1461,6 +1460,13 @@ function keyReleased() {
   }
 }
 
+
+function pointInEllipse(px, py, ex, ey, ew, eh) {
+  const dx = (px - ex) / (ew / 2);
+  const dy = (py - ey) / (eh / 2);
+  return dx * dx + dy * dy <= 1;
+}
+
  class spike {
    constructor(x1, y1, x2, y2, x3, y3) {
      this.x1 = x1;
@@ -1481,6 +1487,7 @@ function keyReleased() {
        this.x1 -= 5;
        this.x2 -= 5;
        this.x3 -= 5;
+       if (charrie === 0 || charrie === 1) {
        if (collideCirclePoly(ball.x, ball.y, ball.s, this.getPoints())) {
          lives *= 10;
          if (shieldPowered === 0) {
@@ -1491,7 +1498,69 @@ function keyReleased() {
              lives -= 1;
            }
          }
+         lives /= 10;}
+       } else {
+if (charrie === 2) {
+  const a =
+    (keyIsDown(UP_ARROW) || hhiigghh || llooww || keyIsDown(DOWN_ARROW))
+      ? radians(-45)
+      : radians(45);
+
+  const tri = [
+    {
+      x: ball.x + 25 * cos(a),
+      y: ball.y + 25 * sin(a)
+    },
+    {
+      x: ball.x + (-25 * cos(a) - -10 * sin(a)),
+      y: ball.y + (-25 * sin(a) + -10 * cos(a))
+    },
+    {
+      x: ball.x + (-25 * cos(a) - 10 * sin(a)),
+      y: ball.y + (-25 * sin(a) + 10 * cos(a))
+    }
+  ];
+
+  if (collidePolyPoly(tri, this.getPoints())) {
+             lives *= 10;
+         if (shieldPowered === 0) {
+           if (lives <= 0) {
+              explode = 1;
+              console.log("POP!")
+           } else {
+             lives -= 1;
+           }
+         }
          lives /= 10;
+  }
+}
+else if (charrie === 3) {
+
+  const pts = [];
+
+  for (let a = 0; a < TWO_PI; a += TWO_PI / 24) {
+    pts.push({
+      x: ball.x + cos(a) * 50 * s,
+      y: ball.y + sin(a) * 25 * s
+    });
+  }
+
+  if (collidePolyPoly(
+    pts,
+    this.getPoints()
+  )) {
+             lives *= 10;
+         if (shieldPowered === 0) {
+           if (lives <= 0) {
+              explode = 1;
+              console.log("POP!")
+           } else {
+             lives -= 1;
+           }
+         }
+         lives /= 10;
+  }
+}
        }
      }
      if (this.x1 <= width / -10) {
@@ -1883,9 +1952,64 @@ for (let i of amos) {
         this.y += height;
       }
     }
-    if (dist(ball.x, ball.y, this.x, this.y) <= width / 15) {
+let hit = false;
+
+if (charrie === 0 || charrie === 1) {
+  hit =
+    dist(ball.x, ball.y, this.x, this.y) <=
+    (ball.s + this.s) / 2;
+    if (hit) {
       explode = 1;
     }
+}
+
+else if (charrie === 2) {
+  const a =
+    (keyIsDown(UP_ARROW) || hhiigghh || llooww || keyIsDown(DOWN_ARROW))
+      ? radians(-45)
+      : radians(45);
+
+  const tri = [
+    {
+      x: ball.x + 25 * cos(a),
+      y: ball.y + 25 * sin(a)
+    },
+    {
+      x: ball.x + (-25 * cos(a) - -10 * sin(a)),
+      y: ball.y + (-25 * sin(a) + -10 * cos(a))
+    },
+    {
+      x: ball.x + (-25 * cos(a) - 10 * sin(a)),
+      y: ball.y + (-25 * sin(a) + 10 * cos(a))
+    }
+  ];
+
+  hit = collideCirclePoly(
+    this.x,
+    this.y,
+    this.s,
+    tri
+  );
+  if (hit) {
+    explode = 1;
+  }
+}
+
+else if (charrie === 3) {
+
+  const rx = 50 * s + this.s / 2;
+  const ry = 25 * s + this.s / 2;
+
+  const dx = (this.x - ball.x) / rx;
+  const dy = (this.y - ball.y) / ry;
+
+  hit = dx * dx + dy * dy <= 1;
+}
+
+
+if (hit) {
+  explode = 1;
+}
 
     if (this.x <= width / -10) {
       this.x += width * 4;
